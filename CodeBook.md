@@ -1,16 +1,18 @@
-#Codebook
-Original Data from 
-##Human Activity Recognition Using Smartphones Dataset, Version 1.0
-Jorge L. Reyes-Ortiz, Davide Anguita, Alessandro Ghio, Luca Oneto. Smartlab - Non Linear Complex Systems Laboratory DITEN - Università degli Studi di Genova. Via Opera Pia 11A, I-16145, Genoa, Italy. activityrecognition@smartlab.ws www.smartlab.ws
+# Introduction
 
-##Steps taken
+The script `run_analysis.R`performs the 5 steps described in the course project's definition.
 
-Out of 561 variables, only the ones containing mean and standard deviations were extracted resulting in 88 variables. There were 10299 total observations after assimilating both test and training data set. Averages of each variable were calculated after grouping the observations by subject and activity
+* First, all the similar data is merged using the `rbind()` function. By similar, we address those files having the same number of columns and referring to the same entities.
+* Then, only those columns with the mean and standard deviation measures are taken from the whole dataset. After extracting these columns, they are given the correct names, taken from `features.txt`.
+* As activity data is addressed with values 1:6, we take the activity names and IDs from `activity_labels.txt` and they are substituted in the dataset.
+* On the whole dataset, those columns with vague column names are corrected.
+* Finally, we generate a new dataset with all the average measures for each subject and activity type (30 subjects * 6 activities = 180 rows). The output file is called `averages_data.txt`, and uploaded to this repository.
 
+# Variables
 
-##Variables
-* activity: character.
-  - one out of 6 activities WALKING, WALKING_UPSTAIRS, WALKING_DOWNSTAIRS, SITTING, STANDING, LAYING
-* subject: integer 1-30.
-  - code that identifies subject who performed the activity 
-* Numeric averages of other variables: tbodyacc.mean.x tbodyacc.mean.y tbodyacc.mean.z tbodyacc.std.x tbodyacc.std.y tbodyacc.std.z tgravityacc.mean.x tgravityacc.mean.y tgravityacc.mean.z tgravityacc.std.x tgravityacc.std.y tgravityacc.std.z tbodyaccjerk.mean.x tbodyaccjerk.mean.y tbodyaccjerk.mean.z tbodyaccjerk.std.x tbodyaccjerk.std.y tbodyaccjerk.std.z tbodygyro.mean.x tbodygyro.mean.y tbodygyro.mean.z tbodygyro.std.x tbodygyro.std.y tbodygyro.std.z tbodygyrojerk.mean.x tbodygyrojerk.mean.y tbodygyrojerk.mean.z tbodygyrojerk.std.x tbodygyrojerk.std.y tbodygyrojerk.std.z tbodyaccmag.mean tbodyaccmag.std tgravityaccmag.mean tgravityaccmag.std tbodyaccjerkmag.mean tbodyaccjerkmag.std tbodygyromag.mean tbodygyromag.std tbodygyrojerkmag.mean tbodygyrojerkmag.std fbodyacc.mean.x fbodyacc.mean.y fbodyacc.mean.z fbodyacc.std.x fbodyacc.std.y fbodyacc.std.z fbodyacc.meanfreq.x fbodyacc.meanfreq.y fbodyacc.meanfreq.z fbodyaccjerk.mean.x fbodyaccjerk.mean.y fbodyaccjerk.mean.z fbodyaccjerk.std.x fbodyaccjerk.std.y fbodyaccjerk.std.z fbodyaccjerk.meanfreq.x fbodyaccjerk.meanfreq.y fbodyaccjerk.meanfreq.z fbodygyro.mean.x fbodygyro.mean.y fbodygyro.mean.z fbodygyro.std.x fbodygyro.std.y fbodygyro.std.z fbodygyro.meanfreq.x fbodygyro.meanfreq.y fbodygyro.meanfreq.z fbodyaccmag.mean fbodyaccmag.std fbodyaccmag.meanfreq fbodybodyaccjerkmag.mean fbodybodyaccjerkmag.std fbodybodyaccjerkmag.meanfreq fbodybodygyromag.mean fbodybodygyromag.std fbodybodygyromag.meanfreq fbodybodygyrojerkmag.mean fbodybodygyrojerkmag.std fbodybodygyrojerkmag.meanfreq angletbodyaccmeangravity angletbodyaccjerkmeangravitymean angletbodygyromeangravitymean angletbodygyrojerkmeangravitymean anglexgravitymean angleygravitymean anglezgravitymean
+* `x_train`, `y_train`, `x_test`, `y_test`, `subject_train` and `subject_test` contain the data from the downloaded files.
+* `x_data`, `y_data` and `subject_data` merge the previous datasets to further analysis.
+* `features` contains the correct names for the `x_data` dataset, which are applied to the column names stored in `mean_and_std_features`, a numeric vector used to extract the desired data.
+* A similar approach is taken with activity names through the `activities` variable.
+* `all_data` merges `x_data`, `y_data` and `subject_data` in a big dataset.
+* Finally, `averages_data` contains the relevant averages which will be later stored in a `.txt` file. `ddply()` from the plyr package is used to apply `colMeans()` and ease the development.

@@ -1,52 +1,41 @@
-
-library(dplyr)
-
-#load data from three files 
-load_data <- function(dataset, column_labels) {
-  subject <- read.table(paste0(relpath, dataset, '/', 'subject_', dataset, '.txt'), col.names= c('subject'))
-  y <- read.table(paste0(relpath, dataset, '/', 'y_', dataset, '.txt'), col.names = c('activity'))
-  x <- read.table(paste0(relpath, dataset, '/', 'X_', dataset, '.txt'), col.names = column_labels)
-  
-  #select only variables that have mean and std in them
-  x <- select(x, matches("mean|std")) 
-  
-  cbind(subject, y, x)
-}
+library(plyr)
 
 
-#download and unzip source data
-download.file("https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip",
-              mode="wb", "dataset.zip")
 
-unzip("dataset.zip")
+x_train <- read.table("train/X_train.txt")
+y_train <- read.table("train/y_train.txt")
+subject_train <- read.table("train/subject_train.txt")
 
-# path inside zip file 
-relpath = 'UCI HAR Dataset/'
+x_test <- read.table("test/X_test.txt")
+y_test <- read.table("test/y_test.txt")
+subject_test <- read.table("test/subject_test.txt")
 
-# load feature names 
-column_labels <- read.table(paste0(relpath, "features.txt"), stringsAsFactors = FALSE)$V2
-# cleanup columnnames, remove ( )  - and ,  
-column_labels <- tolower(gsub('[()-,]','',column_labels))
+x_data <- rbind(x_train, x_test)
 
-# load activity names
-activity_names <- read.table(paste0(relpath, "activity_labels.txt"), row.names = 1)
+y_data <- rbind(y_train, y_test)
 
-#load test and training data
-test <- load_data('test', column_labels)
-train <- load_data('train', column_labels)
+subject_data <- rbind(subject_train, subject_test)
 
-#merge datasets into one
-fulldataset <- rbind(train, test)
 
-# remove intermediate results from memory
-rm("test", "train")
-  
-#resolve full activity names
-fulldataset <- fulldataset %>% mutate(activity = activity_names[activity,])
-  
-#summarize each column
-by_activity_subject <- fulldataset %>% group_by(activity, subject)
-average_table <- by_activity_subject %>% summarise_each(funs(mean))
-  
-#write to file
-write.table(average_table, file="tidy_data.txt", row.names= FALSE)
+features <- read.table("features.txt")
+
+mean_and_std_features <- grep("-(mean|std)\\(\\)", features[, 2])
+
+x_data <- x_data[, mean_and_std_features]
+
+names(x_data) <- features[mean_and_std_features, 2]
+
+
+activities <- read.table("activity_labels.txt")
+
+y_data[, 1] <- activities[y_data[, 1], 2]
+
+names(y_data) <- "activity"
+
+names(subject_data) <- "subject"
+
+all_data <- cbind(x_data, y_data, subject_data)
+
+average_table <- ddply(all_data, .(subject, activity), function(x) colMeans(x[, 1:66]))
+
+write.table(average_table, "tidy_data.txt", row.name=FALSE)
